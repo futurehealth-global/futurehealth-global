@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Future Health - Healthcare Platform</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="images/logo.png" type="image/png">
+    
+    <!-- Production Meta Tags -->
+    <meta property="og:title" content="Future Health - African Healthcare Platform">
+    <meta property="og:description" content="AI-powered healthcare connecting patients with doctors across Africa">
+    <meta property="og:image" content="images/logo.png">
+    <meta property="og:url" content="https://futurehealth.africa">
+    <meta property="og:type" content="website">
+    
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            padding: 50px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+        }
+        
+        /* Logo animation */
+        .main-logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        h1 { 
+            font-size: 3em; 
+            margin-bottom: 20px; 
+        }
+        
+        p { 
+            font-size: 1.2em; 
+            margin-bottom: 30px; 
+            line-height: 1.6;
+        }
+        
+        /* Button visibility fixes */
+        .btn { 
+            background: white !important; 
+            color: #667eea !important; 
+            padding: 15px 30px; 
+            text-decoration: none; 
+            border-radius: 25px; 
+            font-weight: bold !important;
+            display: inline-block;
+            transition: transform 0.3s ease;
+            margin: 5px;
+            border: 2px solid white !important;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.2) !important;
+            color: white !important;
+            border: 2px solid white !important;
+        }
+        
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .feature {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .user-types {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .user-type {
+            background: rgba(255,255,255,0.15);
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 150px;
+        }
+        
+        .pricing {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .price-tier {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            min-width: 180px;
+        }
+        
+        .price {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .status {
+            margin-top: 30px;
+            font-size: 0.9em;
+            opacity: 0.8;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            display: inline-block;
+        }
+        
+        /* Watermark */
+        .watermark {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            opacity: 0.1;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .watermark img {
+            width: 150px;
+            height: auto;
+        }
+        
+        /* Contact info */
+        .contact-info {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <!-- Watermark -->
+    <div class="watermark">
+        <img src="images/logo.png" alt="Future Health">
+    </div>
+    
+    <div class="container">
+        <!-- Animated Logo -->
+        <img src="images/logo.png" alt="Future Health Logo" class="main-logo">
+        
+        <h1>Future Health</h1>
+        <p>Revolutionizing healthcare access across Africa. Connecting patients with doctors and medical interns.</p>
+        
+        <div class="user-types">
+            <div class="user-type">
+                <h3>👨‍⚕️ Patients</h3>
+                <p>Get quality care</p>
+            </div>
+            <div class="user-type">
+                <h3>🎓 Medical Interns</h3>
+                <p>Affordable consultations</p>
+            </div>
+            <div class="user-type">
+                <h3>💼 Doctors</h3>
+                <p>Expert specialists</p>
+            </div>
+        </div>
+
+        <div class="pricing">
+            <div class="price-tier">
+                <h3>Medical Interns</h3>
+                <div class="price">₦1,500</div>
+                <p>Basic consultations</p>
+            </div>
+            <div class="price-tier">
+                <h3>Doctors</h3>
+                <div class="price">₦5,000+</div>
+                <p>Specialist care</p>
+            </div>
+        </div>
+        
+        <div>
+            <a href="/login.html" class="btn">Login to Platform</a>
+            <a href="/signup.html" class="btn btn-secondary">Create Account</a>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <h3>🏥 Tiered Care</h3>
+                <p>Choose from interns to specialists based on your needs and budget</p>
+            </div>
+            <div class="feature">
+                <h3>💻 Telemedicine</h3>
+                <p>Remote consultations from anywhere in Nigeria</p>
+            </div>
+            <div class="feature">
+                <h3>📱 Mobile First</h3>
+                <p>Optimized for all devices and network conditions</p>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="contact-info">
+            <p>📍 CBN Quarters, FHA Lugbe, Abuja</p>
+            <p>📞 +234 806 443 0659 | +234 810 427 3966</p>
+            <p>📧 futurehealth435@gmail.com</p>
+        </div>
+
+        <div class="status">
+            <p>Platform Status: <strong>LIVE</strong> • Version: <strong>1.0.0</strong></p>
+            <p>API: <span id="apiStatus">Checking...</span></p>
+        </div>
+    </div>
+
+    <script>
+        // Check API status - dynamic URL based on environment
+        const apiHealthUrl = window.location.hostname === 'localhost' 
+            ? 'http://localhost:5000/api/health' 
+            : '/api/health';
+        
+        fetch(apiHealthUrl)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('apiStatus').innerHTML = '✅ Connected';
+                console.log('Future Health API:', data);
+            })
+            .catch(error => {
+                document.getElementById('apiStatus').innerHTML = '❌ Offline';
+                console.warn('API offline - running in static mode');
+            });
+    </script>
+</body>
+</html>

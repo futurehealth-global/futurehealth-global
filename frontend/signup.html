@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Future Health</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="images/logo.png" type="image/png">
+    
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <style>
+        /* Watermark */
+        .watermark {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            opacity: 0.1;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .watermark img {
+            width: 150px;
+            height: auto;
+        }
+        
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 9999;
+        }
+        
+        .loading-logo {
+            width: 100px;
+            height: 100px;
+            animation: pulse 1.5s infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Button visibility fixes */
+        button, .btn {
+            background-color: #3B82F6 !important;
+            color: white !important;
+            font-weight: bold !important;
+            border: none !important;
+        }
+        
+        a.btn {
+            background-color: #3B82F6 !important;
+            color: white !important;
+        }
+        
+        /* Make all form buttons visible */
+        button[type="submit"], button[type="button"] {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            box-shadow: 0 4px 6px rgba(102, 126, 234, 0.4) !important;
+        }
+        
+        button[type="submit"]:hover, button[type="button"]:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.5) !important;
+        }
+        
+        /* Required field indicator */
+        .required::after {
+            content: " *";
+            color: #ef4444;
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        intern: '#8B5CF6'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <img src="images/logo.png" alt="Loading" class="loading-logo">
+        <p class="text-xl font-semibold text-primary-500 mt-4">Creating your account...</p>
+        <p class="text-gray-600 mt-2">Please wait while we set up your Future Health account</p>
+    </div>
+    
+    <custom-navbar></custom-navbar>
+    
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <!-- Logo at top -->
+                <div class="text-center mb-8">
+                    <img src="images/logo.png" alt="Future Health Logo" class="w-20 h-20 mx-auto mb-4">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Create Your Account</h2>
+                    <p class="text-gray-600">Join thousands of patients and healthcare professionals on Future Health</p>
+                </div>
+                
+                <div class="flex mb-6 bg-gray-100 rounded-lg p-1">
+                    <button id="patientBtn" class="flex-1 py-3 px-4 rounded-md font-semibold transition duration-300 bg-primary-500 text-white shadow-md">
+                        <i data-feather="user" class="w-4 h-4 inline mr-2"></i>
+                        As Patient
+                    </button>
+                    <button id="doctorBtn" class="flex-1 py-3 px-4 rounded-md font-semibold transition duration-300 text-gray-600 hover:text-primary-500">
+                        <i data-feather="star" class="w-4 h-4 inline mr-2"></i>
+                        As Doctor
+                    </button>
+                    <button id="internBtn" class="flex-1 py-3 px-4 rounded-md font-semibold transition duration-300 text-gray-600 hover:text-intern-500">
+                        <i data-feather="book" class="w-4 h-4 inline mr-2"></i>
+                        As Intern
+                    </button>
+                </div>
+                
+                <form id="signupForm" class="space-y-6">
+                    <!-- DOCTOR FIELDS -->
+                    <div id="doctorFields" class="hidden space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <h3 class="text-lg font-semibold text-blue-800">Doctor Information</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium required">Medical License Number</label>
+                                <input type="text" name="licenseNumber" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="e.g., MD/12345/2020">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">Years of Experience</label>
+                                <input type="number" name="experience" min="0" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="e.g., 5">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium required">Specialization</label>
+                                <select name="specialization" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                    <option value="">Select Specialization</option>
+                                    <option>General Physician</option>
+                                    <option>Cardiologist</option>
+                                    <option>Dermatologist</option>
+                                    <option>Pediatrician</option>
+                                    <option>Neurologist</option>
+                                    <option>Orthopedic</option>
+                                    <option>Dentist</option>
+                                    <option>Psychiatrist</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">Consultation Fee (₦)</label>
+                                <input type="number" name="consultationFee" min="0" step="0.01" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="e.g., 5000.00">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 mb-2 font-medium">Bio</label>
+                            <textarea name="bio" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="Tell patients about your expertise and approach..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- INTERN FIELDS -->
+                    <div id="internFields" class="hidden space-y-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <h3 class="text-lg font-semibold text-purple-800">Medical Intern/Student Information</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium required">Medical School</label>
+                                <input type="text" name="medicalSchool" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-intern-500 focus:border-intern-500" placeholder="e.g., University of Lagos">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium required">Expected Graduation Year</label>
+                                <input type="number" name="graduationYear" required min="2024" max="2030" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-intern-500 focus:border-intern-500" placeholder="e.g., 2026">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">Current Year of Study</label>
+                                <select name="studyYear" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-intern-500 focus:border-intern-500">
+                                    <option value="">Select Year</option>
+                                    <option value="1">1st Year</option>
+                                    <option value="2">2nd Year</option>
+                                    <option value="3">3rd Year</option>
+                                    <option value="4">4th Year</option>
+                                    <option value="5">5th Year</option>
+                                    <option value="6">6th Year</option>
+                                    <option value="intern">Internship</option>
+                                    <option value="housemanship">Housemanship</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">Area of Interest</label>
+                                <select name="interestArea" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-intern-500 focus:border-intern-500">
+                                    <option value="">Select Interest</option>
+                                    <option>General Medicine</option>
+                                    <option>Surgery</option>
+                                    <option>Pediatrics</option>
+                                    <option>Obstetrics & Gynecology</option>
+                                    <option>Psychiatry</option>
+                                    <option>Public Health</option>
+                                    <option>Research</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">Student ID Number</label>
+                                <input type="text" name="studentId" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-intern-500 focus:border-intern-500" placeholder="Enter student ID">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">Consultation Fee (₦)</label>
+                                <input type="number" name="consultationFee" min="0" step="0.01" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-intern-500 focus:border-intern-500" placeholder="e.g., 1500.00" value="1500">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 mb-2 font-medium">About Me & Learning Goals</label>
+                            <textarea name="bio" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-intern-500 focus:border-intern-500" placeholder="Share your medical interests, what you're learning, and how you'd like to help patients..."></textarea>
+                        </div>
+                        
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="flex items-start">
+                                <i data-feather="alert-triangle" class="w-5 h-5 text-yellow-600 mr-2 mt-0.5"></i>
+                                <div>
+                                    <h4 class="font-semibold text-yellow-800">Important Note for Interns</h4>
+                                    <p class="text-yellow-700 text-sm mt-1">
+                                        As a medical intern/student, you'll be supervised by senior doctors. 
+                                        Complex cases will be referred to licensed physicians. 
+                                        Your role focuses on basic consultations, health education, and follow-ups.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- BASIC INFORMATION (Common to all) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-700 mb-2 font-medium required">Full Name</label>
+                            <input type="text" name="name" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="Enter your full name">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2 font-medium required">Email Address</label>
+                            <input type="email" name="email" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="Enter your email">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-700 mb-2 font-medium">Phone Number</label>
+                            <input type="tel" name="phone" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="+234 812 345 6789">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2 font-medium">Date of Birth</label>
+                            <input type="date" name="dateOfBirth" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-700 mb-2 font-medium">Gender</label>
+                            <select name="gender" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                <option value="">Select Gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2 font-medium required">Password</label>
+                            <input type="password" name="password" required minlength="6" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="At least 6 characters">
+                        </div>
+                    </div>
+                    
+                    <!-- ADDRESS SECTION - PROFESSIONAL & RESPECTFUL -->
+                    <div id="addressFields">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4">Address Information</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="md:col-span-2">
+                                <label class="block text-gray-700 mb-2 required">Street Address</label>
+                                <input type="text" name="street" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="e.g., No. 5, Adeola Street, Victoria Island">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2 required">City</label>
+                                <input type="text" name="city" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="e.g., Lagos, Abuja, Port Harcourt">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2 required">State</label>
+                                <input type="text" name="state" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="e.g., Lagos State, FCT, Rivers State">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">ZIP/Postal Code (Optional)</label>
+                                <input type="text" name="zipCode" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="Optional">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <input type="checkbox" id="terms" required class="w-4 h-4 text-primary-500 bg-gray-100 border-gray-300 rounded focus:ring-primary-500">
+                        <label for="terms" class="ml-2 text-sm text-gray-600">
+                            I agree to the <a href="#" class="text-primary-500 hover:underline">Terms of Service</a> and <a href="#" class="text-primary-500 hover:underline">Privacy Policy</a>
+                        </label>
+                    </div>
+
+                    <!-- INTERN SPECIFIC AGREEMENT -->
+                    <div id="internAgreement" class="hidden bg-purple-50 border border-purple-200 rounded-lg p-4">
+                        <div class="flex items-start">
+                            <input type="checkbox" id="internTerms" required class="w-4 h-4 text-purple-500 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 mt-1">
+                            <label for="internTerms" class="ml-2 text-sm text-gray-600">
+                                I understand that as a medical intern/student, I will work under supervision, 
+                                refer complex cases to licensed doctors, and follow all platform guidelines for 
+                                patient safety and medical ethics.
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold py-4 px-6 rounded-lg transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center">
+                        <i data-feather="user-plus" class="w-5 h-5 mr-2"></i>
+                        Create Account
+                    </button>
+                </form>
+                
+                <!-- Contact Information -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h4 class="text-sm font-semibold text-gray-700 mb-2">Contact Information</h4>
+                    <div class="text-sm text-gray-600 space-y-1">
+                        <p><i data-feather="map-pin" class="w-3 h-3 inline mr-2"></i> CBN Quarters, FHA Lugbe, Abuja</p>
+                        <p><i data-feather="phone" class="w-3 h-3 inline mr-2"></i> +234 806 443 0659</p>
+                        <p><i data-feather="phone" class="w-3 h-3 inline mr-2"></i> +234 810 427 3966</p>
+                        <p><i data-feather="mail" class="w-3 h-3 inline mr-2"></i> futurehealth435@gmail.com</p>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-6 pt-6 border-t border-gray-200">
+                    <p class="text-gray-600">
+                        Already have an account? 
+                        <a href="/login.html" class="text-primary-500 font-semibold hover:underline ml-1">Login here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <custom-footer></custom-footer>
+
+    <!-- Watermark -->
+    <div class="watermark">
+        <img src="images/logo.png" alt="Future Health">
+    </div>
+
+    <!-- Scripts -->
+    <script src="api.js"></script>
+    <script src="components/navbar.js"></script>
+    <script src="components/footer.js"></script>
+    <script>
+        feather.replace();
+        
+        const patientBtn = document.getElementById('patientBtn');
+        const doctorBtn = document.getElementById('doctorBtn');
+        const internBtn = document.getElementById('internBtn');
+        const doctorFields = document.getElementById('doctorFields');
+        const internFields = document.getElementById('internFields');
+        const internAgreement = document.getElementById('internAgreement');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        
+        // Toggle between patient, doctor, and intern registration
+        patientBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            setUserType('patient');
+        });
+        
+        doctorBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            setUserType('doctor');
+        });
+
+        internBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            setUserType('intern');
+        });
+        
+        function setUserType(type) {
+            // Reset all buttons
+            patientBtn.classList.remove('bg-primary-500', 'text-white', 'shadow-md');
+            patientBtn.classList.add('text-gray-600');
+            doctorBtn.classList.remove('bg-primary-500', 'text-white', 'shadow-md');
+            doctorBtn.classList.add('text-gray-600');
+            internBtn.classList.remove('bg-intern-500', 'text-white', 'shadow-md');
+            internBtn.classList.add('text-gray-600');
+            
+            // Hide all fields
+            doctorFields.classList.add('hidden');
+            internFields.classList.add('hidden');
+            internAgreement.classList.add('hidden');
+            
+            // Activate selected button and show relevant fields
+            if (type === 'patient') {
+                patientBtn.classList.add('bg-primary-500', 'text-white', 'shadow-md');
+                patientBtn.classList.remove('text-gray-600');
+            } else if (type === 'doctor') {
+                doctorBtn.classList.add('bg-primary-500', 'text-white', 'shadow-md');
+                doctorBtn.classList.remove('text-gray-600');
+                doctorFields.classList.remove('hidden');
+            } else if (type === 'intern') {
+                internBtn.classList.add('bg-intern-500', 'text-white', 'shadow-md');
+                internBtn.classList.remove('text-gray-600');
+                internFields.classList.remove('hidden');
+                internAgreement.classList.remove('hidden');
+            }
+        }
+        
+        // Form submission handler
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading overlay
+            loadingOverlay.style.display = 'flex';
+            
+            // Show loading on button
+            submitBtn.innerHTML = '<i data-feather="loader" class="w-5 h-5 mr-2 animate-spin"></i> Creating Account...';
+            submitBtn.disabled = true;
+            feather.replace();
+            
+            try {
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData);
+                
+                // Determine user type
+                let userType = 'patient';
+                if (doctorBtn.classList.contains('bg-primary-500')) userType = 'doctor';
+                if (internBtn.classList.contains('bg-intern-500')) userType = 'intern';
+                
+                // Prepare signup data
+                const signupData = {
+                    name: data.name,
+                    email: data.email,
+                    password: data.password,
+                    phone: data.phone || '',
+                    dateOfBirth: data.dateOfBirth || '',
+                    gender: data.gender || '',
+                    userType: userType,
+                    address: {
+                        street: data.street || '',
+                        city: data.city || '',
+                        state: data.state || '',
+                        zipCode: data.zipCode || ''
+                    }
+                };
+                
+                // Add role-specific data
+                if (userType === 'doctor') {
+                    signupData.licenseNumber = data.licenseNumber || '';
+                    signupData.experience = data.experience ? parseInt(data.experience) : 0;
+                    signupData.specialization = data.specialization || '';
+                    signupData.consultationFee = data.consultationFee ? parseFloat(data.consultationFee) : 0;
+                    signupData.bio = data.bio || '';
+                }
+                
+                if (userType === 'intern') {
+                    signupData.medicalSchool = data.medicalSchool || '';
+                    signupData.graduationYear = data.graduationYear ? parseInt(data.graduationYear) : 0;
+                    signupData.studyYear = data.studyYear || '';
+                    signupData.interestArea = data.interestArea || '';
+                    signupData.studentId = data.studentId || '';
+                    signupData.consultationFee = data.consultationFee ? parseFloat(data.consultationFee) : 1500;
+                    signupData.bio = data.bio || '';
+                }
+                
+                console.log('Signup data:', signupData);
+                
+                // Use FutureHealthAPI
+                const result = await FutureHealthAPI.signup(signupData);
+                
+                if (result.success) {
+                    localStorage.setItem('token', result.token);
+                    localStorage.setItem('user', JSON.stringify(result.user));
+                    
+                    // Update loading message
+                    loadingOverlay.querySelector('p').textContent = 'Account created! Redirecting...';
+                    
+                    setTimeout(() => {
+                        window.location.href = '/dashboard.html';
+                    }, 1500);
+                } else {
+                    throw new Error(result.message || 'Signup failed');
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                
+                // Hide loading overlay
+                loadingOverlay.style.display = 'none';
+                
+                // Show error notification
+                showNotification(error.message || 'Signup failed. Please try again.', 'error');
+            } finally {
+                // Reset button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                feather.replace();
+            }
+        });
+        
+        function showNotification(message, type = 'info') {
+            const existingNotification = document.querySelector('.notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            
+            const notification = document.createElement('div');
+            notification.className = `notification fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-sm ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i data-feather="${
+                        type === 'success' ? 'check-circle' :
+                        type === 'error' ? 'alert-circle' :
+                        'info'
+                    }" class="w-5 h-5 mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            feather.replace();
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

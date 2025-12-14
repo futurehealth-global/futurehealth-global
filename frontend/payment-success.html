@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Success - Future Health</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-md text-center">
+        <div class="text-green-500 text-6xl mb-4">✅</div>
+        <h1 class="text-2xl font-bold text-gray-800 mb-2">Payment Successful!</h1>
+        <p class="text-gray-600 mb-4">Your appointment has been confirmed.</p>
+        <a href="/dashboard.html" class="bg-primary-500 text-white px-6 py-2 rounded-lg hover:bg-primary-600">
+            Go to Dashboard
+        </a>
+    </div>
+    
+    <script>
+        // Verify payment on page load
+        const urlParams = new URLSearchParams(window.location.search);
+        const reference = urlParams.get('reference');
+        
+        if (reference) {
+            fetch(`/api/payments/verify-payment/${reference}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    console.error('Payment verification failed:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Verification error:', error);
+            });
+        }
+    </script>
+</body>
+</html>

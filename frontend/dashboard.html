@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Future Health</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="images/logo.png" type="image/png">
+    
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <style>
+        /* Watermark */
+        .watermark {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            opacity: 0.1;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .watermark img {
+            width: 150px;
+            height: auto;
+        }
+        
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 9999;
+        }
+        
+        .loading-logo {
+            width: 100px;
+            height: 100px;
+            animation: pulse 1.5s infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Button visibility fixes */
+        button, .btn {
+            background-color: #3B82F6 !important;
+            color: white !important;
+            font-weight: bold !important;
+        }
+        
+        a.btn {
+            background-color: #3B82F6 !important;
+            color: white !important;
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        intern: '#8B5CF6'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Loading Overlay (shown on page load) -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <img src="images/logo.png" alt="Loading" class="loading-logo">
+        <p class="text-xl font-semibold text-primary-500 mt-4">Loading Dashboard...</p>
+        <p class="text-gray-600 mt-2">Please wait while we prepare your Future Health experience</p>
+    </div>
+    
+    <custom-navbar></custom-navbar>
+    
+    <main class="container mx-auto px-4 py-8">
+        <!-- Logo Header -->
+        <div class="text-center mb-8">
+            <img src="images/logo.png" alt="Future Health Logo" class="w-16 h-16 mx-auto mb-4">
+        </div>
+        
+        <div id="dashboardContent">
+            <!-- Content will be loaded dynamically based on user type -->
+        </div>
+        
+        <!-- Contact Info Section -->
+        <div class="mt-12 pt-8 border-t border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Contact Support</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                <div>
+                    <p class="font-medium">📍 Address</p>
+                    <p>CBN Quarters, FHA Lugbe, Abuja</p>
+                </div>
+                <div>
+                    <p class="font-medium">📞 Phone</p>
+                    <p>+234 806 443 0659</p>
+                    <p>+234 810 427 3966</p>
+                </div>
+                <div>
+                    <p class="font-medium">📧 Email</p>
+                    <p>futurehealth435@gmail.com</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <custom-footer></custom-footer>
+
+    <!-- Watermark -->
+    <div class="watermark">
+        <img src="images/logo.png" alt="Future Health">
+    </div>
+
+    <!-- Scripts -->
+    <script src="api.js"></script>
+    <script src="components/navbar.js"></script>
+    <script src="components/footer.js"></script>
+    <script>
+        feather.replace();
+        
+        // Hide loading overlay after 2 seconds
+        setTimeout(() => {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }, 2000);
+        
+        // Check authentication
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        if (!token || !user.id) {
+            window.location.href = '/login.html';
+        }
+        
+        // Load dashboard based on user type
+        async function loadDashboard() {
+            try {
+                const result = await FutureHealthAPI.request('/auth/me');
+                
+                if (!result.success) {
+                    throw new Error('Failed to load user data');
+                }
+                
+                const currentUser = result.user;
+                
+                if (currentUser.userType === 'patient') {
+                    loadPatientDashboard(currentUser);
+                } else if (currentUser.userType === 'doctor') {
+                    loadDoctorDashboard(currentUser);
+                } else if (currentUser.userType === 'intern') {
+                    loadInternDashboard(currentUser);
+                } else {
+                    loadPatientDashboard(currentUser);
+                }
+                
+                // Hide loading overlay once dashboard is loaded
+                document.getElementById('loadingOverlay').style.display = 'none';
+            } catch (error) {
+                console.error('Dashboard error:', error);
+                document.getElementById('loadingOverlay').style.display = 'none';
+                window.location.href = '/login.html';
+            }
+        }
+        
+        function loadPatientDashboard(user) {
+            document.getElementById('dashboardContent').innerHTML = `
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Welcome back, ${user.name}!</h1>
+                    <p class="text-gray-600">Manage your appointments and health profile</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <div class="flex items-center">
+                            <div class="bg-primary-100 p-3 rounded-lg mr-4">
+                                <i data-feather="calendar" class="text-primary-600 w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800" id="upcomingAppointments">0</h3>
+                                <p class="text-gray-600">Upcoming Appointments</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <div class="flex items-center">
+                            <div class="bg-secondary-100 p-3 rounded-lg mr-4">
+                                <i data-feather="check-circle" class="text-secondary-600 w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800" id="completedAppointments">0</h3>
+                                <p class="text-gray-600">Completed Visits</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <div class="flex items-center">
+                            <div class="bg-yellow-100 p-3 rounded-lg mr-4">
+                                <i data-feather="clock" class="text-yellow-600 w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800" id="pendingAppointments">0</h3>
+                                <p class="text-gray-600">Pending</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-800">Recent Appointments</h2>
+                        <div id="recentAppointments" class="space-y-4">
+                            <!-- Appointments will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-800">Quick Actions</h2>
+                        <div class="space-y-3">
+                            <a href="/booking.html" class="flex items-center p-3 bg-primary-50 rounded-lg hover:bg-primary-100 transition duration-300">
+                                <i data-feather="search" class="text-primary-600 mr-3"></i>
+                                <span>Find a Doctor/Intern</span>
+                            </a>
+                            <a href="/profile-edit.html" class="flex items-center p-3 bg-secondary-50 rounded-lg hover:bg-secondary-100 transition duration-300">
+                                <i data-feather="user" class="text-secondary-600 mr-3"></i>
+                                <span>Update Profile</span>
+                            </a>
+                            <a href="#" class="flex items-center p-3 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition duration-300">
+                                <i data-feather="file-text" class="text-yellow-600 mr-3"></i>
+                                <span>Medical History</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            feather.replace();
+            loadPatientAppointments();
+        }
+        
+        function loadDoctorDashboard(user) {
+            document.getElementById('dashboardContent').innerHTML = `
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Welcome, Dr. ${user.name}!</h1>
+                    <p class="text-gray-600">Manage your practice and appointments</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <div class="flex items-center">
+                            <div class="bg-primary-100 p-3 rounded-lg mr-4">
+                                <i data-feather="calendar" class="text-primary-600 w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800" id="todayAppointments">0</h3>
+                                <p class="text-gray-600">Today's Appointments</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <div class="flex items-center">
+                            <div class="bg-secondary-100 p-3 rounded-lg mr-4">
+                                <i data-feather="users" class="text-secondary-600 w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800" id="totalPatients">0</h3>
+                                <p class="text-gray-600">Total Patients</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <div class="flex items-center">
+                            <div class="bg-yellow-100 p-3 rounded-lg mr-4">
+                                <i data-feather="star" class="text-yellow-600 w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800">${user.rating || '0.0'}</h3>
+                                <p class="text-gray-600">Average Rating</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <div class="flex items-center">
+                            <div class="bg-green-100 p-3 rounded-lg mr-4">
+                                <i data-feather="dollar-sign" class="text-green-600 w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800">₦${user.consultationFee || '0'}</h3>
+                                <p class="text-gray-600">Consultation Fee</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Earnings Summary for Doctors -->
+                <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl shadow-lg p-6 mb-8 text-white">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold mb-2">Your Earnings</h2>
+                            <p class="opacity-90">Track and withdraw your consultation fees</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-3xl font-bold" id="doctorEarnings">₦0</p>
+                            <p class="opacity-90">Available Balance</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex space-x-4">
+                        <a href="/wallet.html" class="bg-white text-green-600 hover:bg-green-50 font-semibold py-2 px-6 rounded-lg transition duration-300">
+                            <i data-feather="dollar-sign" class="w-4 h-4 inline mr-2"></i>
+                            View Wallet
+                        </a>
+                        <a href="/wallet.html" class="bg-green-700 hover:bg-green-800 text-white font-semibold py-2 px-6 rounded-lg transition duration-300">
+                            <i data-feather="arrow-right-circle" class="w-4 h-4 inline mr-2"></i>
+                            Withdraw Funds
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-800">Today's Schedule</h2>
+                        <div id="todaySchedule" class="space-y-4">
+                            <!-- Today's appointments will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-800">Quick Actions</h2>
+                        <div class="space-y-3">
+                            <a href="#" class="flex items-center p-3 bg-primary-50 rounded-lg hover:bg-primary-100 transition duration-300">
+                                <i data-feather="calendar" class="text-primary-600 mr-3"></i>
+                                <span>Manage Availability</span>
+                            </a>
+                            <a href="/profile-edit.html" class="flex items-center p-3 bg-secondary-50 rounded-lg hover:bg-secondary-100 transition duration-300">
+                                <i data-feather="user" class="text-secondary-600 mr-3"></i>
+                                <span>Update Profile</span>
+                            </a>
+                            <!-- ✅ ADDED WALLET LINK FOR DOCTORS -->
+                            <a href="/wallet.html" class="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition duration-300">
+                                <i data-feather="dollar-sign" class="text-green-600 mr-3"></i>
+                                <span>View Earnings & Withdraw</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            feather.replace();
+            loadDoctorAppointments();
+            loadDoctorEarnings();
+        }
+
+        function loadInternDashboard(user) {
+            document.getElementById('dashboardContent').innerHTML = `
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Welcome, ${user.name}!</h1>
+                    <p class="text-gray-600">Medical Intern - Learning and growing with Future Health</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <div class="flex items-center">
+                            <div class="bg-intern-100 p-3 rounded-lg mr-4">
+                                <i data-feather="calendar" class="text-intern-600 w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800" id="todayAppointments">0</h3>
+                                <p class="text-gray-600">Today's Sessions</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <div class="flex items-center">
+                            <div class="bg-purple-100 p-3 rounded-lg mr-4">
+                                <i data-feather="users" class="text-purple-600 w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800" id="totalPatients">0</h3>
+                                <p class="text-gray-600">Patients Helped</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <div class="flex items-center">
+                            <div class="bg-yellow-100 p-3 rounded-lg mr-4">
+                                <i data-feather="book" class="text-yellow-600 w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800">${user.medicalSchool || 'Medical Student'}</h3>
+                                <p class="text-gray-600">Medical School</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <div class="flex items-center">
+                            <div class="bg-green-100 p-3 rounded-lg mr-4">
+                                <i data-feather="dollar-sign" class="text-green-600 w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800">₦${user.consultationFee || '1500'}</h3>
+                                <p class="text-gray-600">Student Consultation Rate</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Earnings Summary for Interns -->
+                <div class="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl shadow-lg p-6 mb-8 text-white">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold mb-2">Your Learning Earnings</h2>
+                            <p class="opacity-90">Earn while learning with Future Health</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-3xl font-bold" id="internEarnings">₦0</p>
+                            <p class="opacity-90">Available Balance</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex space-x-4">
+                        <a href="/wallet.html" class="bg-white text-purple-600 hover:bg-purple-50 font-semibold py-2 px-6 rounded-lg transition duration-300">
+                            <i data-feather="dollar-sign" class="w-4 h-4 inline mr-2"></i>
+                            View Wallet
+                        </a>
+                        <a href="/wallet.html" class="bg-purple-700 hover:bg-purple-800 text-white font-semibold py-2 px-6 rounded-lg transition duration-300">
+                            <i data-feather="arrow-right-circle" class="w-4 h-4 inline mr-2"></i>
+                            Withdraw Funds
+                        </a>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <div class="flex items-start">
+                        <i data-feather="info" class="w-5 h-5 text-blue-600 mr-2 mt-0.5"></i>
+                        <div>
+                            <h4 class="font-semibold text-blue-800">Intern Status</h4>
+                            <p class="text-blue-700 text-sm mt-1">
+                                You're currently operating as a medical intern. Complex cases will be referred to senior doctors. 
+                                Focus on basic consultations, health education, and follow-up care.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-800">Today's Learning Sessions</h2>
+                        <div id="todaySchedule" class="space-y-4">
+                            <!-- Today's appointments will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-800">Quick Actions</h2>
+                        <div class="space-y-3">
+                            <a href="#" class="flex items-center p-3 bg-intern-50 rounded-lg hover:bg-intern-100 transition duration-300">
+                                <i data-feather="calendar" class="text-intern-600 mr-3"></i>
+                                <span>Set Availability</span>
+                            </a>
+                            <a href="/profile-edit.html" class="flex items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition duration-300">
+                                <i data-feather="user" class="text-purple-600 mr-3"></i>
+                                <span>Update Profile</span>
+                            </a>
+                            <!-- ✅ ADDED WALLET LINK FOR INTERNS -->
+                            <a href="/wallet.html" class="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition duration-300">
+                                <i data-feather="dollar-sign" class="text-green-600 mr-3"></i>
+                                <span>View Earnings & Withdraw</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            feather.replace();
+            loadInternAppointments();
+            loadInternEarnings();
+        }
+        
+        async function loadPatientAppointments() {
+            try {
+                const result = await FutureHealthAPI.getMyAppointments();
+                
+                if (result.success) {
+                    const appointments = result.appointments;
+                    const upcoming = appointments.filter(a => ['pending', 'confirmed'].includes(a.status) && new Date(a.date) >= new Date()).length;
+                    const completed = appointments.filter(a => a.status === 'completed').length;
+                    const pending = appointments.filter(a => a.status === 'pending').length;
+                    
+                    document.getElementById('upcomingAppointments').textContent = upcoming;
+                    document.getElementById('completedAppointments').textContent = completed;
+                    document.getElementById('pendingAppointments').textContent = pending;
+                    
+                    const container = document.getElementById('recentAppointments');
+                    if (appointments.length === 0) {
+                        container.innerHTML = '<p class="text-gray-500 text-center py-4">No appointments yet</p>';
+                    } else {
+                        container.innerHTML = appointments.map(appointment => `
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <h4 class="font-semibold">${appointment.doctor.userType === 'intern' ? '' : 'Dr. '}${appointment.doctor.name}</h4>
+                                    <p class="text-sm text-gray-600">${appointment.doctor.specialization} ${appointment.doctor.userType === 'intern' ? '(Intern)' : ''}</p>
+                                    <p class="text-xs text-gray-500">${new Date(appointment.date).toLocaleDateString()} • ${appointment.timeSlot?.start || '10:00 AM'}</p>
+                                </div>
+                                <span class="px-2 py-1 text-xs rounded-full ${
+                                    appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                    appointment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                    appointment.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                                    'bg-red-100 text-red-800'
+                                }">${appointment.status}</span>
+                            </div>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading appointments:', error);
+            }
+        }
+        
+        async function loadDoctorAppointments() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const result = await FutureHealthAPI.request(`/doctors/appointments?status=confirmed&date=${today}`);
+                
+                if (result.success) {
+                    const appointments = result.appointments;
+                    document.getElementById('todayAppointments').textContent = appointments.length;
+                    
+                    const container = document.getElementById('todaySchedule');
+                    if (appointments.length === 0) {
+                        container.innerHTML = '<p class="text-gray-500 text-center py-4">No appointments scheduled for today</p>';
+                    } else {
+                        container.innerHTML = appointments.map(appointment => `
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <h4 class="font-semibold">${appointment.patient.name}</h4>
+                                    <p class="text-sm text-gray-600">${appointment.reason}</p>
+                                    <p class="text-xs text-gray-500">${appointment.timeSlot?.start || '10:00 AM'} - ${appointment.timeSlot?.end || '11:00 AM'}</p>
+                                </div>
+                                <span class="px-2 py-1 text-xs rounded-full ${
+                                    appointment.type === 'video' ? 'bg-purple-100 text-purple-800' :
+                                    appointment.type === 'phone' ? 'bg-blue-100 text-blue-800' :
+                                    'bg-green-100 text-green-800'
+                                }">${appointment.type || 'consultation'}</span>
+                            </div>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading doctor appointments:', error);
+            }
+        }
+
+        async function loadDoctorEarnings() {
+            try {
+                const result = await FutureHealthAPI.getWallet();
+                if (result.success && result.wallet) {
+                    const earnings = result.wallet.balance || 0;
+                    document.getElementById('doctorEarnings').textContent = `₦${earnings.toLocaleString()}`;
+                }
+            } catch (error) {
+                console.error('Error loading doctor earnings:', error);
+            }
+        }
+
+        async function loadInternAppointments() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const result = await FutureHealthAPI.request(`/doctors/appointments?status=confirmed&date=${today}`);
+                
+                if (result.success) {
+                    const appointments = result.appointments;
+                    document.getElementById('todayAppointments').textContent = appointments.length;
+                    document.getElementById('totalPatients').textContent = appointments.length;
+                    
+                    const container = document.getElementById('todaySchedule');
+                    if (appointments.length === 0) {
+                        container.innerHTML = '<p class="text-gray-500 text-center py-4">No learning sessions scheduled for today</p>';
+                    } else {
+                        container.innerHTML = appointments.map(appointment => `
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <h4 class="font-semibold">${appointment.patient.name}</h4>
+                                    <p class="text-sm text-gray-600">${appointment.reason}</p>
+                                    <p class="text-xs text-gray-500">${appointment.timeSlot?.start || '10:00 AM'} - ${appointment.timeSlot?.end || '11:00 AM'}</p>
+                                </div>
+                                <span class="px-2 py-1 text-xs rounded-full bg-intern-100 text-intern-800">Learning Session</span>
+                            </div>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading intern appointments:', error);
+            }
+        }
+
+        async function loadInternEarnings() {
+            try {
+                const result = await FutureHealthAPI.getWallet();
+                if (result.success && result.wallet) {
+                    const earnings = result.wallet.balance || 0;
+                    document.getElementById('internEarnings').textContent = `₦${earnings.toLocaleString()}`;
+                }
+            } catch (error) {
+                console.error('Error loading intern earnings:', error);
+            }
+        }
+        
+        // Initialize dashboard
+        loadDashboard();
+    </script>
+</body>
+</html>

@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wallet - Future Health</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <custom-navbar></custom-navbar>
+    
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">My Wallet</h1>
+                <p class="text-gray-600">Track your earnings and manage withdrawals</p>
+            </div>
+
+            <!-- Wallet Balance Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Available Balance -->
+                <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-green-500">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-green-100 p-3 rounded-lg mr-4">
+                            <i data-feather="dollar-sign" class="text-green-600 w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800" id="availableBalance">₦0</h3>
+                            <p class="text-gray-600">Available Balance</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500">Ready for withdrawal</p>
+                </div>
+
+                <!-- Pending Balance -->
+                <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-yellow-500">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-yellow-100 p-3 rounded-lg mr-4">
+                            <i data-feather="clock" class="text-yellow-600 w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800" id="pendingBalance">₦0</h3>
+                            <p class="text-gray-600">Pending Balance</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500">From uncompleted appointments</p>
+                </div>
+
+                <!-- Total Earned -->
+                <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-blue-500">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-100 p-3 rounded-lg mr-4">
+                            <i data-feather="trending-up" class="text-blue-600 w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800" id="totalEarned">₦0</h3>
+                            <p class="text-gray-600">Total Earned</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500">All-time earnings</p>
+                </div>
+            </div>
+
+            <!-- Withdrawal Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Left: Withdrawal Form -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-6 text-gray-800">Request Withdrawal</h2>
+                    
+                    <!-- Bank Details -->
+                    <div id="bankDetailsSection" class="mb-6 p-4 bg-blue-50 rounded-lg">
+                        <h3 class="font-semibold text-blue-800 mb-3">Bank Details</h3>
+                        <div id="bankDetailsContent">
+                            <!-- Bank details will be loaded here -->
+                            <div class="animate-pulse">
+                                <div class="h-4 bg-blue-200 rounded w-3/4 mb-2"></div>
+                                <div class="h-4 bg-blue-200 rounded w-1/2"></div>
+                            </div>
+                        </div>
+                        <button onclick="openBankModal()" class="mt-3 text-blue-600 hover:text-blue-800 text-sm font-medium">
+                            <i data-feather="edit" class="w-4 h-4 inline mr-1"></i>
+                            Update Bank Details
+                        </button>
+                    </div>
+
+                    <!-- Withdrawal Form -->
+                    <form id="withdrawalForm" class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 mb-2 font-medium">Amount (₦)</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-3 text-gray-500">₦</span>
+                                <input type="number" id="withdrawalAmount" 
+                                       class="w-full pl-8 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                       placeholder="1000" min="1000" max="1000000" step="1">
+                            </div>
+                            <p class="text-sm text-gray-500 mt-1">Min: ₦1,000 | Max: ₦1,000,000</p>
+                        </div>
+
+                        <!-- Fee Calculation -->
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="font-medium text-gray-700 mb-2">Fee Breakdown</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Transfer Amount:</span>
+                                    <span class="font-medium">₦<span id="transferAmount">0</span></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Paystack Fee (₦10 + 0.5%):</span>
+                                    <span class="font-medium">₦<span id="paystackFee">0</span></span>
+                                </div>
+                                <div class="flex justify-between border-t border-gray-300 pt-2">
+                                    <span class="font-semibold">You'll Receive:</span>
+                                    <span class="text-lg font-bold text-green-600">₦<span id="netAmount">0</span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="withdrawButton" 
+                                class="w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i data-feather="arrow-right-circle" class="w-5 h-5 inline mr-2"></i>
+                            Withdraw Funds
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Right: Transaction History -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-6 text-gray-800">Recent Transactions</h2>
+                    <div id="transactionsList" class="space-y-4">
+                        <!-- Transactions will be loaded here -->
+                        <div class="text-center py-8">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
+                            <p class="mt-3 text-gray-600">Loading transactions...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bank Details Modal -->
+    <div id="bankModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">Bank Details</h3>
+                    <button onclick="closeBankModal()" class="text-gray-400 hover:text-gray-600">
+                        <i data-feather="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+                <form id="bankForm" class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">Select Bank</label>
+                        <select id="bankSelect" required 
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">Loading banks...</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">Account Number</label>
+                        <input type="text" id="accountNumber" required 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                               placeholder="0123456789" maxlength="10">
+                        <button type="button" onclick="verifyAccount()" 
+                                class="mt-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-3 rounded-lg">
+                            Verify Account
+                        </button>
+                    </div>
+                    
+                    <div id="accountNameContainer" class="hidden">
+                        <label class="block text-gray-700 mb-2 font-medium">Account Name</label>
+                        <input type="text" id="accountName" readonly
+                               class="w-full p-3 border border-gray-300 rounded-lg bg-gray-100">
+                    </div>
+
+                    <div class="flex space-x-4 pt-4">
+                        <button type="submit" 
+                                class="flex-1 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 px-6 rounded-lg">
+                            Save Bank Details
+                        </button>
+                        <button type="button" onclick="closeBankModal()" 
+                                class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="components/navbar.js"></script>
+    <script>
+        feather.replace();
+        
+        let userBankDetails = null;
+        let banksList = [];
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadWalletData();
+            setupEventListeners();
+        });
+
+        async function loadWalletData() {
+            try {
+                // Load wallet info
+                const walletResult = await FutureHealthAPI.getWallet();
+                if (walletResult.success) {
+                    const wallet = walletResult.wallet;
+                    document.getElementById('availableBalance').textContent = `₦${wallet.balance?.toLocaleString() || '0'}`;
+                    document.getElementById('pendingBalance').textContent = `₦${wallet.pendingBalance?.toLocaleString() || '0'}`;
+                    document.getElementById('totalEarned').textContent = `₦${wallet.totalEarned?.toLocaleString() || '0'}`;
+
+                    // Update bank details
+                    updateBankDetailsDisplay(walletResult.bankDetails);
+                    
+                    // Load transactions
+                    loadTransactions(walletResult.recentTransactions);
+                    
+                    // Update withdrawal button state
+                    updateWithdrawalButton(wallet.balance, walletResult.bankDetails?.verified);
+                }
+
+                // Load banks for modal
+                await loadBanks();
+            } catch (error) {
+                console.error('Error loading wallet:', error);
+                showNotification('Failed to load wallet data', 'error');
+            }
+        }
+
+        function updateBankDetailsDisplay(bankDetails) {
+            const container = document.getElementById('bankDetailsContent');
+            if (bankDetails && bankDetails.verified) {
+                container.innerHTML = `
+                    <p class="font-medium">${bankDetails.bankName || 'Bank'}</p>
+                    <p class="text-gray-600">${bankDetails.accountName || ''}</p>
+                    <p class="text-gray-500 text-sm">****${bankDetails.accountNumber?.slice(-4) || ''}</p>
+                `;
+                userBankDetails = bankDetails;
+            } else {
+                container.innerHTML = `
+                    <div class="text-center py-2">
+                        <i data-feather="alert-circle" class="w-6 h-6 text-yellow-500 mx-auto mb-2"></i>
+                        <p class="text-yellow-700 font-medium">Bank details not set</p>
+                        <p class="text-yellow-600 text-sm">Add bank details to withdraw earnings</p>
+                    </div>
+                `;
+                feather.replace();
+            }
+        }
+
+        async function loadBanks() {
+            try {
+                const result = await FutureHealthAPI.getBanks();
+                if (result.success) {
+                    banksList = result.banks || result.bankList || [];
+                    populateBankSelect();
+                }
+            } catch (error) {
+                console.error('Error loading banks:', error);
+                // Fallback to common Nigerian banks
+                banksList = [
+                    { name: 'Access Bank', code: '044' },
+                    { name: 'First Bank', code: '011' },
+                    { name: 'GTBank', code: '058' },
+                    { name: 'UBA', code: '033' },
+                    { name: 'Zenith Bank', code: '057' }
+                ];
+                populateBankSelect();
+            }
+        }
+
+        function populateBankSelect() {
+            const select = document.getElementById('bankSelect');
+            select.innerHTML = '<option value="">Select Bank</option>' +
+                banksList.map(bank => 
+                    `<option value="${bank.code}">${bank.name}</option>`
+                ).join('');
+        }
+
+        function setupEventListeners() {
+            // Withdrawal amount calculation
+            document.getElementById('withdrawalAmount').addEventListener('input', function() {
+                const amount = parseFloat(this.value) || 0;
+                const fee = calculatePaystackFee(amount);
+                const net = amount - fee;
+                
+                document.getElementById('transferAmount').textContent = amount.toLocaleString();
+                document.getElementById('paystackFee').textContent = fee.toLocaleString();
+                document.getElementById('netAmount').textContent = net.toLocaleString();
+            });
+
+            // Withdrawal form submission
+            document.getElementById('withdrawalForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await requestWithdrawal();
+            });
+
+            // Bank form submission
+            document.getElementById('bankForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await saveBankDetails();
+            });
+        }
+
+        function calculatePaystackFee(amount) {
+            // Paystack fee: ₦10 + 0.5% of amount
+            const fee = 10 + (amount * 0.005);
+            return Math.max(fee, 25); // Minimum fee ₦25
+        }
+
+        async function requestWithdrawal() {
+            const amount = parseFloat(document.getElementById('withdrawalAmount').value);
+            const button = document.getElementById('withdrawButton');
+            const originalText = button.innerHTML;
+
+            if (!amount || amount < 1000) {
+                showNotification('Minimum withdrawal is ₦1,000', 'error');
+                return;
+            }
+
+            if (!userBankDetails?.verified) {
+                showNotification('Please add verified bank details first', 'error');
+                openBankModal();
+                return;
+            }
+
+            try {
+                button.innerHTML = '<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto"></div>';
+                button.disabled = true;
+
+                console.log('📤 Requesting withdrawal:', amount);
+                const result = await FutureHealthAPI.requestWithdrawal(amount);
+                
+                if (result.success) {
+                    showNotification('Withdrawal request submitted successfully!', 'success');
+                    document.getElementById('withdrawalAmount').value = '';
+                    // Reload wallet data
+                    setTimeout(() => loadWalletData(), 2000);
+                } else {
+                    throw new Error(result.message || 'Withdrawal failed');
+                }
+            } catch (error) {
+                console.error('❌ Withdrawal error:', error);
+                showNotification(error.message, 'error');
+            } finally {
+                button.innerHTML = originalText;
+                button.disabled = false;
+                feather.replace();
+            }
+        }
+
+        async function verifyAccount() {
+            const accountNumber = document.getElementById('accountNumber').value;
+            const bankCode = document.getElementById('bankSelect').value;
+
+            if (!accountNumber || accountNumber.length !== 10) {
+                showNotification('Please enter a valid 10-digit account number', 'error');
+                return;
+            }
+
+            if (!bankCode) {
+                showNotification('Please select a bank', 'error');
+                return;
+            }
+
+            try {
+                const result = await FutureHealthAPI.verifyBankAccount(accountNumber, bankCode);
+                
+                if (result.success) {
+                    document.getElementById('accountName').value = result.accountName;
+                    document.getElementById('accountNameContainer').classList.remove('hidden');
+                    showNotification('Account verified successfully', 'success');
+                } else {
+                    throw new Error(result.message || 'Account verification failed');
+                }
+            } catch (error) {
+                console.error('❌ Verification error:', error);
+                showNotification(error.message, 'error');
+            }
+        }
+
+        async function saveBankDetails() {
+            const bankCode = document.getElementById('bankSelect').value;
+            const accountNumber = document.getElementById('accountNumber').value;
+            const accountName = document.getElementById('accountName').value;
+            const bankName = document.getElementById('bankSelect').selectedOptions[0].text;
+
+            if (!bankCode || !accountNumber || !accountName) {
+                showNotification('Please complete all fields and verify account', 'error');
+                return;
+            }
+
+            try {
+                const bankDetails = {
+                    accountNumber,
+                    accountName,
+                    bankName,
+                    bankCode
+                };
+
+                const result = await FutureHealthAPI.updateBankDetails(bankDetails);
+                
+                if (result.success) {
+                    showNotification('Bank details saved successfully', 'success');
+                    closeBankModal();
+                    loadWalletData(); // Reload to update display
+                } else {
+                    throw new Error(result.message || 'Failed to save bank details');
+                }
+            } catch (error) {
+                console.error('❌ Save bank error:', error);
+                showNotification(error.message, 'error');
+            }
+        }
+
+        function openBankModal() {
+            document.getElementById('bankModal').classList.remove('hidden');
+            // Populate existing data if available
+            if (userBankDetails) {
+                document.getElementById('bankSelect').value = userBankDetails.bankCode;
+                document.getElementById('accountNumber').value = userBankDetails.accountNumber;
+                document.getElementById('accountName').value = userBankDetails.accountName;
+                document.getElementById('accountNameContainer').classList.remove('hidden');
+            }
+        }
+
+        function closeBankModal() {
+            document.getElementById('bankModal').classList.add('hidden');
+            // Reset form
+            document.getElementById('bankForm').reset();
+            document.getElementById('accountNameContainer').classList.add('hidden');
+        }
+
+        function loadTransactions(transactions) {
+            const container = document.getElementById('transactionsList');
+            
+            if (!transactions || transactions.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <i data-feather="file-text" class="w-12 h-12 text-gray-400 mx-auto mb-4"></i>
+                        <p class="text-gray-600">No transactions yet</p>
+                    </div>
+                `;
+                feather.replace();
+                return;
+            }
+
+            container.innerHTML = transactions.map(t => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <h4 class="font-semibold">${t.description || 'Transaction'}</h4>
+                        <p class="text-sm text-gray-600">${new Date(t.date || t.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-bold ${t.amount > 0 ? 'text-green-600' : 'text-red-600'}">
+                            ${t.amount > 0 ? '+' : ''}₦${Math.abs(t.amount).toLocaleString()}
+                        </span>
+                        <span class="block text-xs px-2 py-1 rounded-full ${
+                            t.status === 'completed' ? 'bg-green-100 text-green-800' :
+                            t.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-gray-100 text-gray-800'
+                        }">${t.status || 'pending'}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            feather.replace();
+        }
+
+        function updateWithdrawalButton(balance, hasBank) {
+            const button = document.getElementById('withdrawButton');
+            const canWithdraw = balance >= 1000 && hasBank;
+            
+            button.disabled = !canWithdraw;
+            if (!canWithdraw) {
+                button.title = balance < 1000 ? 
+                    'Minimum withdrawal: ₦1,000' : 
+                    'Please add verified bank details';
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-sm ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i data-feather="${
+                        type === 'success' ? 'check-circle' :
+                        type === 'error' ? 'alert-circle' :
+                        'info'
+                    }" class="w-5 h-5 mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            feather.replace();
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

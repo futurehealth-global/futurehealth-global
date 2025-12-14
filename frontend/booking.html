@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment - Future Health</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981', 
+                        intern: '#8B5CF6'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <custom-navbar></custom-navbar>
+    
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-6xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-800 mb-4">Book Your Appointment</h1>
+                <p class="text-xl text-gray-600">Choose from our qualified healthcare professionals</p>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                        <input type="text" id="searchInput" placeholder="Search by name or specialty..." 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Specialization</label>
+                        <select id="specializationFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">All Specializations</option>
+                            <option>General Physician</option>
+                            <option>Cardiologist</option>
+                            <option>Dermatologist</option>
+                            <option>Pediatrician</option>
+                            <option>Neurologist</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                        <select id="typeFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">All Types</option>
+                            <option value="doctor">Doctors Only</option>
+                            <option value="intern">Interns Only</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Healthcare Providers Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="providersGrid">
+                <!-- Providers will be loaded here -->
+                <div class="col-span-full text-center py-12">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto"></div>
+                    <p class="mt-4 text-gray-600">Loading healthcare providers...</p>
+                </div>
+            </div>
+
+            <!-- No Results Message -->
+            <div id="noResults" class="hidden text-center py-12">
+                <i data-feather="users" class="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">No providers found</h3>
+                <p class="text-gray-600">Try adjusting your search criteria</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Appointment Modal -->
+    <div id="appointmentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">Book Appointment</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <i data-feather="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                
+                <div id="providerInfo" class="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <!-- Provider info will be inserted here -->
+                </div>
+
+                <form id="appointmentForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Appointment Date</label>
+                        <input type="date" id="appointmentDate" required 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                               min="<?php echo date('Y-m-d'); ?>">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Preferred Time</label>
+                        <select id="appointmentTime" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">Select Time</option>
+                            <option value="09:00">9:00 AM</option>
+                            <option value="10:00">10:00 AM</option>
+                            <option value="11:00">11:00 AM</option>
+                            <option value="12:00">12:00 PM</option>
+                            <option value="14:00">2:00 PM</option>
+                            <option value="15:00">3:00 PM</option>
+                            <option value="16:00">4:00 PM</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Visit</label>
+                        <textarea id="appointmentReason" required rows="3" 
+                                  class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                  placeholder="Please describe your symptoms or reason for consultation..."></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Appointment Type</label>
+                        <select id="appointmentType" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="video">Video Consultation</option>
+                            <option value="phone">Phone Consultation</option>
+                        </select>
+                    </div>
+
+                    <!-- PAYMENT SECTION - ADDED -->
+                    <div id="paymentSection" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-yellow-800 mb-2">Payment Details</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-yellow-700">Consultation Fee:</span>
+                                <span class="font-semibold">₦<span id="consultationFee">0</span></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-yellow-700">Platform Fee (3%):</span>
+                                <span class="font-semibold">₦<span id="platformFee">0</span></span>
+                            </div>
+                            <div class="flex justify-between border-t border-yellow-300 pt-2">
+                                <span class="text-yellow-800 font-semibold">Total to Pay:</span>
+                                <span class="text-lg font-bold">₦<span id="totalAmount">0</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold py-4 px-6 rounded-lg transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center">
+                        <i data-feather="credit-card" class="w-5 h-5 mr-2"></i>
+                        Pay ₦<span id="feeAmount">0</span> via Paystack
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <custom-footer></custom-footer>
+
+    <script src="api.js"></script>
+    <script src="components/navbar.js"></script>
+    <script src="components/footer.js"></script>
+    <script>
+        feather.replace();
+        
+        let currentProvider = null;
+        let allProviders = [];
+        let currentAppointmentId = null;
+
+        // Load providers on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProviders();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', filterProviders);
+            document.getElementById('specializationFilter').addEventListener('change', filterProviders);
+            document.getElementById('typeFilter').addEventListener('change', filterProviders);
+        }
+
+        async function loadProviders() {
+            try {
+                console.log('🔄 Loading healthcare providers...');
+                const result = await FutureHealthAPI.getDoctors();
+                
+                if (result.success) {
+                    allProviders = result.doctors;
+                    console.log('✅ Providers loaded:', allProviders.length);
+                    displayProviders(allProviders);
+                } else {
+                    throw new Error(result.message || 'Failed to load providers');
+                }
+            } catch (error) {
+                console.error('❌ Error loading providers:', error);
+                document.getElementById('providersGrid').innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <i data-feather="alert-triangle" class="w-16 h-16 text-red-400 mx-auto mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2">Failed to load providers</h3>
+                        <p class="text-gray-600">Please try again later</p>
+                        <button onclick="loadProviders()" class="mt-4 bg-primary-500 text-white px-6 py-2 rounded-lg hover:bg-primary-600">
+                            Retry
+                        </button>
+                    </div>
+                `;
+                feather.replace();
+            }
+        }
+
+        function displayProviders(providers) {
+            const grid = document.getElementById('providersGrid');
+            const noResults = document.getElementById('noResults');
+
+            if (providers.length === 0) {
+                grid.classList.add('hidden');
+                noResults.classList.remove('hidden');
+                return;
+            }
+
+            noResults.classList.add('hidden');
+            grid.classList.remove('hidden');
+
+            grid.innerHTML = providers.map(provider => `
+                <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition duration-300 overflow-hidden">
+                    <div class="p-6">
+                        <!-- Provider Header -->
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-16 h-16 rounded-full bg-${provider.userType === 'intern' ? 'purple' : 'blue'}-100 flex items-center justify-center overflow-hidden">
+                                    ${provider.profileImage ? 
+                                        `<img src="${provider.profileImage}" alt="${provider.name}" class="w-16 h-16 rounded-full object-cover">` :
+                                        `<span class="text-${provider.userType === 'intern' ? 'purple' : 'blue'}-600 font-semibold text-lg">
+                                            ${provider.name.split(' ').map(n => n[0]).join('')}
+                                        </span>`
+                                    }
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-lg text-gray-800">
+                                        ${provider.userType === 'intern' ? '' : 'Dr. '}${provider.name}
+                                    </h3>
+                                    <p class="text-gray-600">${provider.specialization || 'General Medicine'}</p>
+                                    <span class="inline-block mt-1 px-2 py-1 text-xs rounded-full ${provider.userType === 'intern' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}">
+                                        ${provider.userType === 'intern' ? 'Medical Intern' : 'Licensed Doctor'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Provider Info -->
+                        <div class="space-y-2 mb-4">
+                            ${provider.bio ? `<p class="text-gray-600 text-sm">${provider.bio}</p>` : ''}
+                            
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-500">Experience:</span>
+                                <span class="font-medium">${provider.experience ? provider.experience + ' years' : 'Not specified'}</span>
+                            </div>
+                            
+                            ${provider.rating ? `
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-500">Rating:</span>
+                                    <span class="font-medium text-yellow-600">⭐ ${provider.rating}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- Fee and Action -->
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                            <div>
+                                <span class="text-2xl font-bold text-gray-800">₦${provider.consultationFee || '1500'}</span>
+                                <span class="text-gray-500 text-sm block">consultation</span>
+                            </div>
+                            <button onclick="openBookingModal('${provider._id}')" 
+                                    class="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2 rounded-lg transition duration-300 font-semibold">
+                                Book Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            feather.replace();
+        }
+
+        function filterProviders() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const specialization = document.getElementById('specializationFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+
+            const filtered = allProviders.filter(provider => {
+                const matchesSearch = !searchTerm || 
+                    provider.name.toLowerCase().includes(searchTerm) ||
+                    (provider.specialization && provider.specialization.toLowerCase().includes(searchTerm)) ||
+                    (provider.bio && provider.bio.toLowerCase().includes(searchTerm));
+
+                const matchesSpecialization = !specialization || 
+                    (provider.specialization === specialization);
+
+                const matchesType = !typeFilter || 
+                    provider.userType === typeFilter;
+
+                return matchesSearch && matchesSpecialization && matchesType;
+            });
+
+            displayProviders(filtered);
+        }
+
+        function openBookingModal(providerId) {
+            currentProvider = allProviders.find(p => p._id === providerId);
+            
+            if (!currentProvider) {
+                alert('Provider not found');
+                return;
+            }
+
+            // Update provider info in modal
+            document.getElementById('providerInfo').innerHTML = `
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-full bg-${currentProvider.userType === 'intern' ? 'purple' : 'blue'}-100 flex items-center justify-center overflow-hidden">
+                        ${currentProvider.profileImage ? 
+                            `<img src="${currentProvider.profileImage}" alt="${currentProvider.name}" class="w-12 h-12 rounded-full object-cover">` :
+                            `<span class="text-${currentProvider.userType === 'intern' ? 'purple' : 'blue'}-600 font-semibold">
+                                ${currentProvider.name.split(' ').map(n => n[0]).join('')}
+                            </span>`
+                        }
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-800">
+                            ${currentProvider.userType === 'intern' ? '' : 'Dr. '}${currentProvider.name}
+                        </h4>
+                        <p class="text-gray-600 text-sm">${currentProvider.specialization || 'General Medicine'}</p>
+                        <p class="text-gray-500 text-sm">${currentProvider.userType === 'intern' ? 'Medical Intern' : 'Licensed Doctor'}</p>
+                    </div>
+                </div>
+            `;
+
+            // Update fee display
+            const fee = currentProvider.consultationFee || (currentProvider.userType === 'intern' ? 1500 : 5000);
+            const platformFee = fee * 0.03; // 3% commission
+            const totalAmount = fee;
+            
+            document.getElementById('consultationFee').textContent = fee.toLocaleString();
+            document.getElementById('platformFee').textContent = platformFee.toLocaleString();
+            document.getElementById('totalAmount').textContent = totalAmount.toLocaleString();
+            document.getElementById('feeAmount').textContent = totalAmount.toLocaleString();
+
+            // Show modal
+            document.getElementById('appointmentModal').classList.remove('hidden');
+            feather.replace();
+        }
+
+        function closeModal() {
+            document.getElementById('appointmentModal').classList.add('hidden');
+            currentProvider = null;
+            currentAppointmentId = null;
+        }
+
+        // Handle form submission
+        document.getElementById('appointmentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            
+            try {
+                submitButton.innerHTML = '<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto"></div>';
+                submitButton.disabled = true;
+
+                // Create appointment first
+                const appointmentData = {
+                    doctorId: currentProvider._id,
+                    date: document.getElementById('appointmentDate').value,
+                    timeSlot: {
+                        start: document.getElementById('appointmentTime').value,
+                        end: '16:00'
+                    },
+                    reason: document.getElementById('appointmentReason').value,
+                    type: document.getElementById('appointmentType').value,
+                    consultationFee: currentProvider.consultationFee || (currentProvider.userType === 'intern' ? 1500 : 5000)
+                };
+
+                console.log('📤 Creating appointment:', appointmentData);
+                
+                const appointmentResult = await FutureHealthAPI.createAppointment(appointmentData);
+                
+                if (!appointmentResult.success) {
+                    throw new Error(appointmentResult.message || 'Failed to create appointment');
+                }
+
+                currentAppointmentId = appointmentResult.appointment._id;
+                console.log('✅ Appointment created:', currentAppointmentId);
+
+                // Initialize Paystack payment
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const fee = appointmentData.consultationFee;
+                
+                // ✅ FIXED: Use correct endpoint for payment initialization
+                const paymentResult = await FutureHealthAPI.request('/payments/initialize', 'POST', {
+                    appointmentId: currentAppointmentId,
+                    email: user.email,
+                    amount: fee
+                });
+
+                if (!paymentResult.success) {
+                    throw new Error(paymentResult.message || 'Payment initialization failed');
+                }
+
+                console.log('✅ Payment initialized:', paymentResult);
+
+                // Open Paystack payment
+                const handler = PaystackPop.setup({
+                    key: 'pk_test_your_public_key_here', // Replace with your Paystack public key
+                    email: user.email,
+                    amount: fee * 100, // Convert to kobo
+                    ref: paymentResult.reference || 'FH-' + Date.now(),
+                    onClose: function(){
+                        alert('Payment cancelled. Appointment not confirmed.');
+                        closeModal();
+                    },
+                    callback: function(response){
+                        // Verify payment on backend
+                        verifyPayment(response.reference);
+                    }
+                });
+                
+                handler.openIframe();
+
+            } catch (error) {
+                console.error('❌ Booking error:', error);
+                alert('Error: ' + error.message);
+            } finally {
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
+            }
+        });
+
+        async function verifyPayment(reference) {
+            try {
+                console.log('🔍 Verifying payment:', reference);
+                
+                const result = await FutureHealthAPI.request(`/payments/verify/${reference}`, 'GET');
+                
+                if (result.success) {
+                    alert('🎉 Payment successful! Appointment confirmed.');
+                    closeModal();
+                    window.location.href = '/dashboard.html';
+                } else {
+                    alert('Payment verification failed: ' + result.message);
+                }
+            } catch (error) {
+                console.error('❌ Verification error:', error);
+                alert('Error verifying payment. Please contact support.');
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('appointmentModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

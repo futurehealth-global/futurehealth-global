@@ -1,0 +1,20 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - echo "Installing Future Health dependencies..."
+      - cd backend
+      - npm install
+  build:
+    commands:
+      - echo "Building Future Health application..."
+      - echo "No build step needed for Node.js backend"
+  post_build:
+    commands:
+      - echo "Future Health build completed on `date`"
+artifacts:
+  files:
+    - '**/*'
+  base-directory: .

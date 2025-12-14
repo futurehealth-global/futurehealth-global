@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - Future Health</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <custom-navbar></custom-navbar>
+    
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Edit Your Profile</h2>
+                    <p class="text-gray-600">Update your information and profile picture</p>
+                </div>
+
+                <!-- Profile Picture Section -->
+                <div class="text-center mb-8">
+                    <div class="relative inline-block">
+                        <div id="profileImageContainer" class="w-32 h-32 rounded-full bg-gray-200 mx-auto mb-4 overflow-hidden border-4 border-white shadow-lg">
+                            <!-- Profile image will be loaded here -->
+                        </div>
+                        <input type="file" id="profileImageInput" accept="image/*" class="hidden">
+                        <button onclick="document.getElementById('profileImageInput').click()" 
+                                class="absolute bottom-0 right-0 bg-primary-500 text-white p-2 rounded-full shadow-lg hover:bg-primary-600 transition duration-300">
+                            <i data-feather="camera" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-600">Click camera icon to upload profile picture</p>
+                </div>
+
+                <form id="profileForm" class="space-y-6">
+                    <!-- Basic Information -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-700 mb-2 font-medium">Full Name *</label>
+                            <input type="text" name="name" required 
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2 font-medium">Email Address *</label>
+                            <input type="email" name="email" required readonly
+                                   class="w-full p-3 border border-gray-300 rounded-lg bg-gray-100">
+                        </div>
+                    </div>
+
+                    <!-- Professional Information -->
+                    <div id="professionalFields">
+                        <!-- Fields will be dynamically loaded based on user type -->
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-700 mb-2 font-medium">Phone Number</label>
+                            <input type="tel" name="phone" 
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2 font-medium">Date of Birth</label>
+                            <input type="date" name="dateOfBirth" 
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                    </div>
+
+                    <!-- Bio -->
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">Bio/Description</label>
+                        <textarea name="bio" rows="3" 
+                                  class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                  placeholder="Tell us about yourself..."></textarea>
+                    </div>
+
+                    <!-- Address -->
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4">Address Information</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="md:col-span-2">
+                                <label class="block text-gray-700 mb-2">Street Address</label>
+                                <input type="text" name="street" 
+                                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">City</label>
+                                <input type="text" name="city" 
+                                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">State</label>
+                                <input type="text" name="state" 
+                                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-4 pt-6">
+                        <button type="submit" 
+                                class="flex-1 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-4 px-6 rounded-lg transition duration-300 shadow-lg hover:shadow-xl">
+                            <i data-feather="save" class="w-5 h-5 inline mr-2"></i>
+                            Save Changes
+                        </button>
+                        <button type="button" onclick="window.location.href='/dashboard.html'" 
+                                class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-4 px-6 rounded-lg transition duration-300">
+                            <i data-feather="arrow-left" class="w-5 h-5 inline mr-2"></i>
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="api.js"></script>
+    <script src="components/navbar.js"></script>
+    <script>
+        feather.replace();
+        
+        let currentUser = null;
+        let profileImageFile = null;
+
+        // Load user data on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadUserData();
+            setupEventListeners();
+        });
+
+        async function loadUserData() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                const result = await FutureHealthAPI.request('/auth/me');
+                if (result.success) {
+                    currentUser = result.user;
+                    populateForm(currentUser);
+                    loadProfessionalFields(currentUser);
+                } else {
+                    throw new Error('Failed to load user data');
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                alert('Error loading profile data');
+                window.location.href = '/dashboard.html';
+            }
+        }
+
+        function populateForm(user) {
+            // Basic information
+            document.querySelector('input[name="name"]').value = user.name || '';
+            document.querySelector('input[name="email"]').value = user.email || '';
+            document.querySelector('input[name="phone"]').value = user.phone || '';
+            document.querySelector('input[name="dateOfBirth"]').value = user.dateOfBirth || '';
+            document.querySelector('textarea[name="bio"]').value = user.bio || '';
+
+            // Address
+            if (user.address) {
+                document.querySelector('input[name="street"]').value = user.address.street || '';
+                document.querySelector('input[name="city"]').value = user.address.city || '';
+                document.querySelector('input[name="state"]').value = user.address.state || '';
+            }
+
+            // Profile image
+            updateProfileImage(user);
+        }
+
+        function updateProfileImage(user) {
+            const profileContainer = document.getElementById('profileImageContainer');
+            if (user.profileImage) {
+                profileContainer.innerHTML = `<img src="${user.profileImage}" alt="${user.name}" class="w-32 h-32 object-cover">`;
+            } else {
+                const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                let bgColor = 'blue';
+                if (user.userType === 'intern') bgColor = 'purple';
+                if (user.userType === 'patient') bgColor = 'green';
+                
+                profileContainer.innerHTML = `
+                    <div class="w-32 h-32 bg-${bgColor}-100 rounded-full flex items-center justify-center">
+                        <span class="text-${bgColor}-600 font-bold text-2xl">${initials}</span>
+                    </div>
+                `;
+            }
+        }
+
+        function loadProfessionalFields(user) {
+            const container = document.getElementById('professionalFields');
+            
+            if (user.userType === 'doctor') {
+                container.innerHTML = `
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                        <h3 class="text-lg font-semibold text-blue-800 mb-3">Professional Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">Medical License Number</label>
+                                <input type="text" name="licenseNumber" 
+                                       value="${user.licenseNumber || ''}"
+                                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">Years of Experience</label>
+                                <input type="number" name="experience" min="0"
+                                       value="${user.experience || ''}"
+                                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">Specialization</label>
+                                <select name="specialization" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                    <option value="">Select Specialization</option>
+                                    <option value="General Physician" ${user.specialization === 'General Physician' ? 'selected' : ''}>General Physician</option>
+                                    <option value="Cardiologist" ${user.specialization === 'Cardiologist' ? 'selected' : ''}>Cardiologist</option>
+                                    <option value="Dermatologist" ${user.specialization === 'Dermatologist' ? 'selected' : ''}>Dermatologist</option>
+                                    <option value="Pediatrician" ${user.specialization === 'Pediatrician' ? 'selected' : ''}>Pediatrician</option>
+                                    <option value="Neurologist" ${user.specialization === 'Neurologist' ? 'selected' : ''}>Neurologist</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">Consultation Fee (₦)</label>
+                                <input type="number" name="consultationFee" min="0" step="0.01"
+                                       value="${user.consultationFee || ''}"
+                                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (user.userType === 'intern') {
+                container.innerHTML = `
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+                        <h3 class="text-lg font-semibold text-purple-800 mb-3">Intern Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">Medical School</label>
+                                <input type="text" name="medicalSchool" 
+                                       value="${user.medicalSchool || ''}"
+                                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">Expected Graduation Year</label>
+                                <input type="number" name="graduationYear" min="2024" max="2030"
+                                       value="${user.graduationYear || ''}"
+                                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">Current Year of Study</label>
+                                <select name="studyYear" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                    <option value="">Select Year</option>
+                                    <option value="1" ${user.studyYear === '1' ? 'selected' : ''}>1st Year</option>
+                                    <option value="2" ${user.studyYear === '2' ? 'selected' : ''}>2nd Year</option>
+                                    <option value="3" ${user.studyYear === '3' ? 'selected' : ''}>3rd Year</option>
+                                    <option value="4" ${user.studyYear === '4' ? 'selected' : ''}>4th Year</option>
+                                    <option value="5" ${user.studyYear === '5' ? 'selected' : ''}>5th Year</option>
+                                    <option value="6" ${user.studyYear === '6' ? 'selected' : ''}>6th Year</option>
+                                    <option value="intern" ${user.studyYear === 'intern' ? 'selected' : ''}>Internship</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">Consultation Fee (₦)</label>
+                                <input type="number" name="consultationFee" min="0" step="0.01"
+                                       value="${user.consultationFee || '1500'}"
+                                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (user.userType === 'patient') {
+                container.innerHTML = `
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                        <h3 class="text-lg font-semibold text-green-800 mb-3">Patient Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">Emergency Contact</label>
+                                <input type="text" name="emergencyContact" 
+                                       value="${user.emergencyContact || ''}"
+                                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                       placeholder="Name and phone number">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium">Blood Type</label>
+                                <select name="bloodType" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                    <option value="">Select Blood Type</option>
+                                    <option value="A+" ${user.bloodType === 'A+' ? 'selected' : ''}>A+</option>
+                                    <option value="A-" ${user.bloodType === 'A-' ? 'selected' : ''}>A-</option>
+                                    <option value="B+" ${user.bloodType === 'B+' ? 'selected' : ''}>B+</option>
+                                    <option value="B-" ${user.bloodType === 'B-' ? 'selected' : ''}>B-</option>
+                                    <option value="AB+" ${user.bloodType === 'AB+' ? 'selected' : ''}>AB+</option>
+                                    <option value="AB-" ${user.bloodType === 'AB-' ? 'selected' : ''}>AB-</option>
+                                    <option value="O+" ${user.bloodType === 'O+' ? 'selected' : ''}>O+</option>
+                                    <option value="O-" ${user.bloodType === 'O-' ? 'selected' : ''}>O-</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            feather.replace();
+        }
+
+        function setupEventListeners() {
+            // Profile image upload
+            document.getElementById('profileImageInput').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                        alert('Image size should be less than 5MB');
+                        return;
+                    }
+                    
+                    profileImageFile = file;
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('profileImageContainer').innerHTML = 
+                            `<img src="${e.target.result}" alt="Preview" class="w-32 h-32 object-cover rounded-full">`;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Form submission
+            document.getElementById('profileForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await saveProfile();
+            });
+        }
+
+        async function saveProfile() {
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            
+            try {
+                submitButton.innerHTML = '<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto"></div>';
+                submitButton.disabled = true;
+
+                // Create FormData for file upload
+                const formData = new FormData();
+
+                // Add profile image if changed
+                if (profileImageFile) {
+                    formData.append('profileImage', profileImageFile);
+                }
+
+                // Add all form fields
+                const formElements = this.elements;
+                for (let element of formElements) {
+                    if (element.name && element.type !== 'file') {
+                        formData.append(element.name, element.value);
+                    }
+                }
+
+                console.log('📤 Saving profile data...');
+                
+                // Use the new profile update endpoint
+                const result = await FutureHealthAPI.updateProfile(formData);
+                
+                if (result.success) {
+                    alert('🎉 Profile updated successfully!');
+                    // Update local storage
+                    localStorage.setItem('user', JSON.stringify(result.user));
+                    window.location.href = '/dashboard.html';
+                } else {
+                    throw new Error(result.message || 'Failed to update profile');
+                }
+
+            } catch (error) {
+                console.error('❌ Profile update error:', error);
+                alert('Error: ' + error.message);
+            } finally {
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

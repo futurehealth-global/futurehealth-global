@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Future Health</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="images/logo.png" type="image/png">
+    
+    <style>
+        /* Watermark */
+        .watermark {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            opacity: 0.1;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .watermark img {
+            width: 150px;
+            height: auto;
+        }
+        
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 9999;
+        }
+        
+        .loading-logo {
+            width: 100px;
+            height: 100px;
+            animation: pulse 1.5s infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Button visibility fix */
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            border: none !important;
+            font-weight: bold !important;
+            box-shadow: 0 4px 6px rgba(102, 126, 234, 0.4) !important;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.5) !important;
+        }
+        
+        /* Make all buttons visible */
+        button, .btn, a.btn {
+            background-color: #3B82F6 !important;
+            color: white !important;
+            font-weight: bold !important;
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <img src="images/logo.png" alt="Loading" class="loading-logo">
+        <p class="text-xl font-semibold text-primary-500 mt-4">Authenticating...</p>
+        <p class="text-gray-600 mt-2">Please wait while we sign you in</p>
+    </div>
+    
+    <custom-navbar></custom-navbar>
+    
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-md mx-auto">
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <!-- Logo at top -->
+                <div class="text-center mb-8">
+                    <img src="images/logo.png" alt="Future Health Logo" class="w-20 h-20 mx-auto mb-4">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h2>
+                    <p class="text-gray-600">Sign in to your Future Health account</p>
+                </div>
+                
+                <form id="loginForm" class="space-y-6">
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">Email Address</label>
+                        <input type="email" name="email" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="Enter your email">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">Password</label>
+                        <input type="password" name="password" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="Enter your password">
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="remember" class="w-4 h-4 text-primary-500 bg-gray-100 border-gray-300 rounded focus:ring-primary-500">
+                            <label for="remember" class="ml-2 text-sm text-gray-600">Remember me</label>
+                        </div>
+                        <a href="#" class="text-sm text-primary-500 hover:underline">Forgot password?</a>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center btn-primary">
+                        <i data-feather="log-in" class="w-5 h-5 mr-2"></i>
+                        Sign In
+                    </button>
+                </form>
+                
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <p class="text-center text-gray-600">
+                        Don't have an account? 
+                        <a href="/signup.html" class="text-primary-500 font-semibold hover:underline ml-1">Sign up here</a>
+                    </p>
+                </div>
+                
+                <!-- Contact Info -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h4 class="text-sm font-semibold text-gray-700 mb-2">Contact Information</h4>
+                    <div class="text-sm text-gray-600 space-y-1">
+                        <p><i data-feather="map-pin" class="w-3 h-3 inline mr-2"></i> CBN Quarters, FHA Lugbe, Abuja</p>
+                        <p><i data-feather="phone" class="w-3 h-3 inline mr-2"></i> +234 806 443 0659</p>
+                        <p><i data-feather="phone" class="w-3 h-3 inline mr-2"></i> +234 810 427 3966</p>
+                        <p><i data-feather="mail" class="w-3 h-3 inline mr-2"></i> futurehealth435@gmail.com</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <custom-footer></custom-footer>
+
+    <!-- Watermark -->
+    <div class="watermark">
+        <img src="images/logo.png" alt="Future Health">
+    </div>
+
+    <!-- Scripts -->
+    <script src="api.js"></script>
+    <script src="components/navbar.js"></script>
+    <script src="components/footer.js"></script>
+    <script>
+        feather.replace();
+        
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading overlay
+            loadingOverlay.style.display = 'flex';
+            
+            // Show loading on button
+            submitBtn.innerHTML = '<i data-feather="loader" class="w-5 h-5 mr-2 animate-spin"></i> Signing In...';
+            submitBtn.disabled = true;
+            feather.replace();
+            
+            try {
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData);
+                
+                const result = await FutureHealthAPI.login(data.email, data.password);
+                
+                if (result.success) {
+                    localStorage.setItem('token', result.token);
+                    localStorage.setItem('user', JSON.stringify(result.user));
+                    
+                    // Update loading message
+                    loadingOverlay.querySelector('p').textContent = 'Login successful! Redirecting...';
+                    
+                    setTimeout(() => {
+                        window.location.href = '/dashboard.html';
+                    }, 1500);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                
+                // Hide loading overlay
+                loadingOverlay.style.display = 'none';
+                
+                // Show error notification
+                showNotification(error.message || 'Login failed. Please check your credentials.', 'error');
+            } finally {
+                // Reset button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                feather.replace();
+            }
+        });
+        
+        function showNotification(message, type = 'info') {
+            const existingNotification = document.querySelector('.notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            
+            const notification = document.createElement('div');
+            notification.className = `notification fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-sm ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i data-feather="${
+                        type === 'success' ? 'check-circle' :
+                        type === 'error' ? 'alert-circle' :
+                        'info'
+                    }" class="w-5 h-5 mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            feather.replace();
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
