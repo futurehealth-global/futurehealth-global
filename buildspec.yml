@@ -1,4 +1,13 @@
 version: 0.2
+
+# 🔐 Environment variables from AWS Parameter Store
+# (Make sure these are set in your CodeBuild project)
+# - PAYSTACK_SECRET_KEY
+# - MONGODB_URI  
+# - JWT_SECRET
+# - EMAIL_PASS
+# - SSH_PRIVATE_KEY
+
 phases:
   install:
     runtime-versions:
@@ -7,14 +16,45 @@ phases:
       - echo "Installing Future Health dependencies..."
       - cd backend
       - npm install
+
   build:
     commands:
       - echo "Building Future Health application..."
-      - echo "No build step needed for Node.js backend"
+      - echo "Creating deployment package..."
+      - mkdir -p deployment
+      - cp -r backend/* deployment/
+      # Create .env file with secrets from environment variables
+      - echo "PAYSTACK_SECRET_KEY=$PAYSTACK_SECRET_KEY" > deployment/.env
+      - echo "MONGODB_URI=$MONGODB_URI" >> deployment/.env
+      - echo "JWT_SECRET=$JWT_SECRET" >> deployment/.env
+      - echo "EMAIL_PASS=$EMAIL_PASS" >> deployment/.env
+      - echo "NODE_ENV=production" >> deployment/.env
+
   post_build:
     commands:
-      - echo "Future Health build completed on `date`"
+      - echo "🚀 Deploying Future Health to EC2..."
+      
+      # 1. Setup SSH with the private key from Parameter Store
+      - mkdir -p ~/.ssh
+      - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+      - chmod 600 ~/.ssh/id_rsa
+      - ssh-keyscan -H 3.239.220.176 >> ~/.ssh/known_hosts
+      
+      # 2. Deploy code to EC2
+      - scp -o StrictHostKeyChecking=no -r deployment/* ubuntu@3.239.220.176:/home/ubuntu/future-health/
+      
+      # 3. Install production dependencies and restart app
+      - ssh -o StrictHostKeyChecking=no ubuntu@3.239.220.176 "
+          cd /home/ubuntu/future-health &&
+          echo 'Installing production dependencies...' &&
+          npm install --only=production &&
+          echo 'Starting/Restarting Future Health...' &&
+          pm2 restart future-health || pm2 start server.js --name future-health
+        "
+      
+      - echo "✅ Future Health deployment completed on `date`"
+
 artifacts:
   files:
     - '**/*'
-  base-directory: .
+  base-directory: deployment
