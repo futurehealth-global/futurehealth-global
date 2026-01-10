@@ -1,0 +1,56 @@
+name: Deploy Future Health to EC2
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Allows manual trigger in GitHub UI
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Install backend dependencies
+      run: |
+        cd backend
+        npm ci  # Clean install for consistency
+        
+    - name: Setup SSH and Deploy
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        EC2_HOST: '3.239.220.176'
+      run: |
+        # 1. Setup SSH key
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        
+        # 2. Avoid host key verification prompt
+        ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
+        
+        # 3. Deploy backend code
+        echo "📦 Deploying backend files to EC2..."
+        scp -o StrictHostKeyChecking=no -r backend/* ubuntu@$EC2_HOST:/home/ubuntu/future-health/
+        
+        # 4. Deploy frontend files (if you have them separately)
+        scp -o StrictHostKeyChecking=no -r frontend/* ubuntu@$EC2_HOST:/home/ubuntu/future-health/public/ 2>/dev/null || true
+        
+        # 5. Install production deps and restart app
+        echo "🚀 Restarting application on EC2..."
+        ssh -o StrictHostKeyChecking=no ubuntu@$EC2_HOST "
+          cd /home/ubuntu/future-health
+          echo 'Installing production dependencies...'
+          npm install --only=production
+          echo 'Starting/Restarting Future Health with PM2...'
+          pm2 restart future-health || pm2 start server.js --name future-health
+          echo 'Application deployed successfully!'
+        "
+        
+    - name: Deployment Success
+      run: echo "✅ Future Health deployed to EC2! Visit https://futurehealth.website"
