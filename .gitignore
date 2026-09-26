@@ -95,3 +95,10 @@ cloudinary-temp-*
 # Frontend build files (if any)
 dist/
 build/.env*
+terraform-future-health/.terraform/ 
+terraform-future-health/*.tfstate 
+terraform-future-health/*.tfstate.backup 
+terraform-future-health/.terraform.tfstate.lock.info 
+terraform-future-health/*.tfvars 
+terraform-future-health/crash.log 
+terraform-future-health/crash.log 

@@ -45,7 +45,7 @@ class FutureHealthAPI {
     }
 
     static async signup(userData) {
-        return this.request('/auth/signup', {
+        return this.request('/auth/register', {  // ✅ FIXED: changed from /auth/signup to /auth/register
             method: 'POST',
             body: userData
         });

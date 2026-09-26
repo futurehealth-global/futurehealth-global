@@ -5,7 +5,7 @@ const User = require('../models/User');
 const router = express.Router();
 
 // Enhanced signup with intern support
-router.post('/signup', async (req, res) => {
+router.post('/register', async (req, res) => {  // ✅ CHANGED FROM /signup TO /register
     try {
         const { 
             name, email, password, userType, phone, dateOfBirth, gender, address,
@@ -110,7 +110,6 @@ router.post('/login', async (req, res) => {
             });
         }
         
-        // ✅ ADDED JWT_SECRET FALLBACK
         const token = jwt.sign(
             { userId: user._id, userType: user.userType },
             process.env.JWT_SECRET || 'future-health-secret-key',
@@ -129,13 +128,11 @@ router.post('/login', async (req, res) => {
                 consultationFee: user.consultationFee,
                 medicalSchool: user.medicalSchool,
                 studyYear: user.studyYear,
-                // ✅ RETURN WALLET INFO
                 wallet: user.wallet ? {
                     balance: user.wallet.balance,
                     pendingBalance: user.wallet.pendingBalance,
                     totalEarned: user.wallet.totalEarned
                 } : null,
-                // ✅ RETURN BANK DETAILS STATUS
                 bankDetails: user.bankDetails ? {
                     hasBankDetails: true,
                     verified: user.bankDetails.verified,
@@ -165,7 +162,6 @@ router.get('/me', async (req, res) => {
             });
         }
 
-        // ✅ ADDED JWT_SECRET FALLBACK
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'future-health-secret-key');
         const user = await User.findById(decoded.userId).select('-password');
         
@@ -190,20 +186,17 @@ router.get('/me', async (req, res) => {
                 studyYear: user.studyYear,
                 bio: user.bio,
                 profileImage: user.profileImage,
-                // ✅ RETURN WALLET
                 wallet: user.wallet ? {
                     balance: user.wallet.balance,
                     pendingBalance: user.wallet.pendingBalance,
                     totalEarned: user.wallet.totalEarned
                 } : null,
-                // ✅ RETURN BANK DETAILS
                 bankDetails: user.bankDetails ? {
                     hasBankDetails: true,
                     verified: user.bankDetails.verified,
                     bankName: user.bankDetails.bankName,
                     accountNumber: `****${user.bankDetails.accountNumber?.slice(-4) || ''}`
                 } : { hasBankDetails: false },
-                // ✅ ADD WALLET SUMMARY FOR FRONTEND
                 walletSummary: user.wallet ? {
                     canWithdraw: user.wallet.balance >= 1000 && user.bankDetails?.verified,
                     formattedBalance: `₦${user.wallet.balance.toLocaleString()}`,

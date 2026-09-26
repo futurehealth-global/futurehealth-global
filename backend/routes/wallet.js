@@ -3,7 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const Withdrawal = require('../models/Withdrawal');
 const PlatformEarnings = require('../models/PlatformEarnings');
-const auth = require('../middleware/auth');
+const { auth } = require('../middleware/auth');  // ✅ FIXED - destructured auth
 
 // Update bank details
 router.post('/bank-details', auth, async (req, res) => {
