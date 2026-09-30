@@ -16,10 +16,12 @@ const corsOptions = {
     if (!origin) return callback(null, true);
     
     const allowedOrigins = [
-      'http://localhost:3000',  // Local development
-      'http://localhost:5000',  // Local API
-      'https://futurehealth.africa',  // Your production domain
-      'https://www.futurehealth.africa'  // WWW version
+      'http://localhost:3000',                    // Local development
+      'http://localhost:5000',                    // Local API
+      'https://futurehealth-222.pages.dev',       // Cloudflare Pages (live frontend)
+      'https://futurehealth.africa',              // Future custom domain
+      'https://www.futurehealth.africa',          // Future custom domain (www)
+      'http://79.76.103.243'                      // Oracle Cloud backend (direct testing)
     ];
     
     if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {

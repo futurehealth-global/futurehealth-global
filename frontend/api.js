@@ -1,7 +1,7 @@
 // frontend/api.js - COMPLETE VERSION WITH PAYMENT SYSTEM
 const API_BASE = window.location.hostname === 'localhost' 
   ? 'http://localhost:5000/api'  // Development
-  : '/api';  // Production - Same origin
+  : 'http://79.76.103.243/api';  // Production - Oracle Cloud
 
 class FutureHealthAPI {
     static async request(endpoint, options = {}) {
