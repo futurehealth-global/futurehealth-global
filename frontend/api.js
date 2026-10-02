@@ -1,7 +1,7 @@
 // frontend/api.js - COMPLETE VERSION WITH PAYMENT SYSTEM
 const API_BASE = window.location.hostname === 'localhost' 
   ? 'http://localhost:5000/api'  // Development
-  : 'http://79.76.103.243/api';  // Production - Oracle Cloud
+  : 'https://api.futurehealth.website/api';  // Production - Cloudflare HTTPS proxy
 
 class FutureHealthAPI {
     static async request(endpoint, options = {}) {
@@ -45,7 +45,7 @@ class FutureHealthAPI {
     }
 
     static async signup(userData) {
-        return this.request('/auth/register', {  // ✅ FIXED: changed from /auth/signup to /auth/register
+        return this.request('/auth/register', {
             method: 'POST',
             body: userData
         });
